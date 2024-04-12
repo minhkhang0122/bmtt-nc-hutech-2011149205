@@ -2,15 +2,40 @@ from flask import Flask, request, jsonify
 from cipher.caesar import CaesarCipher
 from cipher.vigenere.vigenere_cipher import VigenereCipher
 from cipher.railfence.railfence_cipher import RailFenceCipher
-
+from cipher.playfair.playfair_cipher import PlayFairCipher
 
 app = Flask(__name__)
 vigenere_Cipher = VigenereCipher()
 caesar_cipher = CaesarCipher()
 railfence_cipher = RailFenceCipher()
+playfair_cipher = PlayFairCipher()
 
 
-#RailFence Algorithm
+#PlayFair API Call
+@app.route('/api/playfair/creatematrix', methods=['POST'])
+def playfair_creatematrix():
+    data = request.json
+    key = data['key']
+    playfair_matrix = playfair_cipher.create_playfair_matrix(key)
+    return jsonify({"playfair_matrix": playfair_matrix})
+@app.route('/api/playfair/encrypt', methods=['POST'])
+def playfair_encrypt():
+    data = request.json
+    plain_text = data['plain_text']
+    key = data['key']
+    playfair_matrix = playfair_cipher.create_playfair_matrix(key)
+    encrypt_text = playfair_cipher.playfair_encrypt(plain_text, playfair_matrix)
+    return jsonify({'encrypted_text': encrypt_text})
+@app.route('/api/playfair/decrypt', methods=['POST'])
+def playfair_decrypt():
+    data= request.json
+    cipher_text = data['cipher_text']
+    key = data['key']
+    playfair_matrix = playfair_cipher.create_playfair_matrix(key)
+    decrypted_text = playfair_cipher.playfair_decrypt(cipher_text, playfair_matrix)
+    return jsonify({'decrypted-text': decrypted_text})    
+    
+#RailFence API Call
 @app.route('/api/railfence/encrypt', methods=['POST'])
 def encrypt():
     data = request.json
@@ -28,7 +53,7 @@ def decrypt():
     return jsonify({'decrypted_text': decrypted_text})
 
 
-# Vigenere CIPHER ALGORITHM
+# Vigenere API Call
 @app.route('/api/vigenere/encrypt', methods =['POST'])
 def vigenere_encrypt():
     data = request.json
@@ -45,7 +70,7 @@ def vigenere_decrypt():
     decrypted_text = vigenere_Cipher.vigenere_decrypt(cipher_text, key)
     return jsonify({'decrypted_message': decrypted_text})
     
-# CAESAR CIPHER ALGORITHM
+# CAESAR API Call
 @app.route("/api/caesar/encrypt", methods=["POST"])
 def caesar_encrypt():
     data = request.json
